@@ -2,7 +2,8 @@
 
 Storage Architecture for Environmental Sensor Data
 
-> *Solutions evaluation prepared for the Numairsia project as of March 2026*
+Last update : March 2026
+
 ---
 
 ## 1. Objectives and Specifications
@@ -172,21 +173,7 @@ This doesn't mean hot storage has no role. A thin caching layer for recent data 
 
 The core idea behind cold storage architectures is simple: **store data as files on object storage, and bring a query engine to the data when you need it.**
 
-```mermaid
-graph LR
-    A[Sensor Stations] -->|Batch ingest| B[Ingestion Pipeline]
-    B -->|Write files| C[Object Storage<br/>MinIO / Ceph / Swift]
-    C -->|Read| D[DuckDB]
-    C -->|Read| E[Pandas / Polars]
-    C -->|Read| F[Spark / Trino]
-
-    style A fill:#e8e4df,stroke:#5a5a5a,color:#2d2d2d
-    style B fill:#d6cfc7,stroke:#5a5a5a,color:#2d2d2d
-    style C fill:#c1cdd9,stroke:#4a5568,color:#1a2332,stroke-width:2px
-    style D fill:#d9dce0,stroke:#5a5a5a,color:#2d2d2d
-    style E fill:#d9dce0,stroke:#5a5a5a,color:#2d2d2d
-    style F fill:#d9dce0,stroke:#5a5a5a,color:#2d2d2d
-```
+![cold-storage](img/cold-storage.svg)
 
 This separation has several structural advantages:
 
@@ -345,19 +332,6 @@ The key improvements Iceberg brings over bare Parquet:
 
 ---
 
-#### Proposed architecture for Numairsia
-
-![proposed-architecture](img/proposed-architecture.svg)
-
-On the private OpenStack cloud:
-
-- **Object storage** is provided by Ceph. Ceph exposes S3-compatible APIs directly.
-- **Iceberg catalog** can be a lightweight REST catalog or a SQL/JDBC catalog backed by PostgreSQL. SQLite is better treated as a development or single-user option than as the default production recommendation.
-- **Ingestion** uses PyIceberg (Python) or a simple script that writes Parquet files and commits them to the Iceberg table. This fits naturally into batch workflows managed by Airflow, cron, or any scheduler.
-- **Querying** uses DuckDB for interactive analysis (with Iceberg extension), StarRocks and and Jupyter notebooks for research.
-
----
-
 ## 3. Scoring Solutions
 
 Each solution is scored against the project's high-level specifications on a 1 to 5 scale (5 = best fit).
@@ -411,3 +385,16 @@ This choice is grounded in the project's actual constraints:
 If there is a future need for real-time dashboards on the most recent data, a thin hot layer (e.g., a small TimescaleDB, QuestDB instance or a StarRocks materialized view holding the last 7 to 30 days) can be added alongside the Iceberg-based cold store. This hybrid approach gives you the best of both worlds without compromising the long-term architecture.
 
 But the **primary, canonical, permanent store** should be Iceberg on object storage. It is the lowest-regret choice available today.
+
+---
+
+## 5. Proposed architecture for Numairsia
+
+![proposed-architecture](img/proposed-architecture.svg)
+
+On the private Compute Canada OpenStack cloud:
+
+- **Object storage** is provided by Ceph. Ceph exposes S3-compatible APIs directly.
+- **Iceberg catalog** can be a lightweight REST catalog or a SQL/JDBC catalog backed by PostgreSQL.
+- **Ingestion** uses PyIceberg (Python) or a simple script that writes Parquet files and commits them to the Iceberg table. This fits naturally into batch workflows managed by Airflow, cron, or any scheduler.
+- **Querying** uses DuckDB for interactive analysis (with Iceberg extension), StarRocks and and Jupyter notebooks for research.
