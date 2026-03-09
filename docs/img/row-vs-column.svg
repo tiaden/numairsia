@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340" width="700" height="340">
+  <rect width="700" height="340" fill="#F7F5F2"/>
+
+  <defs>
+    <marker id="ab" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0,7 3,0 6" fill="#2468A8"/>
+    </marker>
+    <marker id="at" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0,7 3,0 6" fill="#1A7560"/>
+    </marker>
+    <marker id="aw" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0,7 3,0 6" fill="#5C4A3C"/>
+    </marker>
+    <marker id="aa" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0,7 3,0 6" fill="#C97820"/>
+    </marker>
+    <style>
+      text { font-family: 'Outfit', 'Segoe UI', sans-serif; }
+      .mono { font-family: 'Fira Code', 'Consolas', monospace; }
+    </style>
+  </defs>
+  <text x="168" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1916">Row-Oriented — CSV</text>
+  <text x="546" y="30" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1916">Column-Oriented — Parquet</text>
+  <text x="168" y="46" text-anchor="middle" class="mono" font-size="9.5" fill="#B04040">scans all 20 cells · 15 unnecessary reads</text>
+  <text x="546" y="46" text-anchor="middle" class="mono" font-size="9.5" fill="#174F43">reads only 5 cells · 75% I/O saved</text>
+  <line x1="350" y1="54" x2="350" y2="326" stroke="#E0DAD4" stroke-width="1" stroke-dasharray="5,4"/>
+  <rect x="168" y="62" width="78" height="16" rx="3" fill="#C97820" opacity="0.15"/>
+  <text x="207" y="74" text-anchor="middle" class="mono" font-size="8" fill="#C97820">▶ AVG(temp)</text>
+  <text x="585" y="74" text-anchor="middle" class="mono" font-size="8" fill="#C97820">▶ AVG(temp)</text>
+  <line x1="2" y1="131" x2="10" y2="131" stroke="#C5BCB3" stroke-width="1.5" marker-end="url(#aw)"/>
+  <line x1="2" y1="161" x2="10" y2="161" stroke="#C5BCB3" stroke-width="1.5" marker-end="url(#aw)"/>
+  <line x1="2" y1="191" x2="10" y2="191" stroke="#C5BCB3" stroke-width="1.5" marker-end="url(#aw)"/>
+  <line x1="2" y1="221" x2="10" y2="221" stroke="#C5BCB3" stroke-width="1.5" marker-end="url(#aw)"/>
+  <line x1="2" y1="251" x2="10" y2="251" stroke="#C5BCB3" stroke-width="1.5" marker-end="url(#aw)"/>
+  <rect x="12" y="82" width="78" height="34" fill="#EDE7DF" stroke="#C5BCB3" stroke-width="1"/>
+  <text x="51" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#4A4540">timestamp</text>
+  <rect x="90" y="82" width="78" height="34" fill="#EDE7DF" stroke="#C5BCB3" stroke-width="1"/>
+  <text x="129" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#4A4540">station</text>
+  <rect x="168" y="82" width="78" height="34" fill="#C97820" stroke="#C5BCB3" stroke-width="1"/>
+  <text x="207" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#FFFFFF">temp</text>
+  <rect x="246" y="82" width="78" height="34" fill="#EDE7DF" stroke="#C5BCB3" stroke-width="1"/>
+  <text x="285" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#4A4540">humidity</text>
+  <rect x="12" y="116" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="51" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">09:00:00</text>
+  <rect x="90" y="116" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="129" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">ST_001</text>
+  <rect x="168" y="116" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="207" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">21.3</text>
+  <rect x="246" y="116" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="285" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">65</text>
+  <rect x="12" y="146" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="51" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">09:00:01</text>
+  <rect x="90" y="146" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="129" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">ST_001</text>
+  <rect x="168" y="146" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="207" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">21.4</text>
+  <rect x="246" y="146" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="285" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">64</text>
+  <rect x="12" y="176" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="51" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">09:00:02</text>
+  <rect x="90" y="176" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="129" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">ST_002</text>
+  <rect x="168" y="176" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="207" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">19.8</text>
+  <rect x="246" y="176" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="285" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">71</text>
+  <rect x="12" y="206" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="51" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">09:00:03</text>
+  <rect x="90" y="206" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="129" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">ST_002</text>
+  <rect x="168" y="206" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="207" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">19.7</text>
+  <rect x="246" y="206" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="285" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">72</text>
+  <rect x="12" y="236" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="51" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">09:00:04</text>
+  <rect x="90" y="236" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="129" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">ST_003</text>
+  <rect x="168" y="236" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="207" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">23.1</text>
+  <rect x="246" y="236" width="78" height="30" fill="#EDE8E2" stroke="#C5BCB3" stroke-width="0.75" opacity="0.65"/>
+  <text x="285" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.65">58</text>
+  <text x="429" y="77" text-anchor="middle" class="mono" font-size="8" fill="#2468A8" opacity="0.55">skip</text>
+  <rect x="390" y="82" width="78" height="34" fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1"/>
+  <text x="429" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#4A4540">timestamp</text>
+  <text x="507" y="77" text-anchor="middle" class="mono" font-size="8" fill="#2468A8" opacity="0.55">skip</text>
+  <rect x="468" y="82" width="78" height="34" fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1"/>
+  <text x="507" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#4A4540">station</text>
+  <rect x="546" y="82" width="78" height="34" fill="#C97820" stroke="#C97820" stroke-width="2"/>
+  <text x="585" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#FFFFFF">temp</text>
+  <text x="663" y="77" text-anchor="middle" class="mono" font-size="8" fill="#2468A8" opacity="0.55">skip</text>
+  <rect x="624" y="82" width="78" height="34" fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1"/>
+  <text x="663" y="105" text-anchor="middle" class="mono" font-size="9" font-weight="600" fill="#4A4540">humidity</text>
+  <rect x="390" y="116" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="429" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">09:00:00</text>
+  <rect x="468" y="116" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="507" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">ST_001</text>
+  <rect x="546" y="116" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="585" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">21.3</text>
+  <rect x="624" y="116" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="663" y="136" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">65</text>
+  <rect x="390" y="146" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="429" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">09:00:01</text>
+  <rect x="468" y="146" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="507" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">ST_001</text>
+  <rect x="546" y="146" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="585" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">21.4</text>
+  <rect x="624" y="146" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="663" y="166" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">64</text>
+  <rect x="390" y="176" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="429" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">09:00:02</text>
+  <rect x="468" y="176" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="507" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">ST_002</text>
+  <rect x="546" y="176" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="585" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">19.8</text>
+  <rect x="624" y="176" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="663" y="196" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">71</text>
+  <rect x="390" y="206" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="429" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">09:00:03</text>
+  <rect x="468" y="206" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="507" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">ST_002</text>
+  <rect x="546" y="206" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="585" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">19.7</text>
+  <rect x="624" y="206" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="663" y="226" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">72</text>
+  <rect x="390" y="236" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="429" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">09:00:04</text>
+  <rect x="468" y="236" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="507" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">ST_003</text>
+  <rect x="546" y="236" width="78" height="30" fill="#FAEACF" stroke="#C97820" stroke-width="1.5" opacity="1"/>
+  <text x="585" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="1">23.1</text>
+  <rect x="624" y="236" width="78" height="30" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="0.5" opacity="0.2"/>
+  <text x="663" y="256" text-anchor="middle" class="mono" font-size="9.5" fill="#1C1916" opacity="0.2">58</text>
+  <rect x="30" y="318" width="11" height="11" rx="2" fill="#FAEACF" stroke="#C97820" stroke-width="1" opacity="1"/>
+  <text x="45" y="327" font-size="9.5" fill="#4A4540" opacity="1">Queried column</text>
+  <rect x="250" y="318" width="11" height="11" rx="2" fill="#EDE7DF" stroke="#C5BCB3" stroke-width="1" opacity="0.8"/>
+  <text x="265" y="327" font-size="9.5" fill="#4A4540" opacity="0.8">Read, not needed (CSV)</text>
+  <rect x="470" y="318" width="11" height="11" rx="2" fill="#EBF3FB" stroke="#7EB5D8" stroke-width="1" opacity="0.4"/>
+  <text x="485" y="327" font-size="9.5" fill="#4A4540" opacity="0.4">Skipped entirely (Parquet)</text>
+</svg>

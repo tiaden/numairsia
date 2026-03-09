@@ -1,0 +1,25 @@
+site_name: NumAirSia Data Store
+site_description: Air, Intersectoriality, Respiratory and Sound Research
+site_url: https://tiaden.github.io/numairsia/
+repo_url: https://github.com/tiaden/numairsia
+repo_name: tiaden/numairsia
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - toc:
+      permalink: true
+
+nav:
+  - Overwiew: index.md
+  - Data Store Evaluation : datastore-evaluation.md
