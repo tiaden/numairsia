@@ -292,7 +292,7 @@ Parquet on object storage is a massive improvement over CSV. It is the right fil
 
 ---
 
-#### Option C : Apache Iceberg on object storage
+#### Option C : Apache Iceberg Data Lakehouse
 
 Apache Iceberg is an open table format that sits on top of data files (typically Parquet) and adds a metadata layer that tracks schema, partitioning, snapshots, and file-level statistics. Originally developed at Netflix to manage petabyte-scale analytic datasets on object storage, Iceberg is now an Apache top-level project with broad industry adoption.
 
@@ -364,7 +364,7 @@ Each solution is scored against the project's high-level specifications on a 1 t
 
 ## 4. Recommendation
 
-**For the Numairsia project, the recommended primary data store architecture is Apache Iceberg tables (Parquet format) on S3-compatible object storage, queried with DuckDB.**
+**For the Numairsia project, the recommended primary data store is an Iceberg Data Lakehouse (Iceberg tables on S3 object storage) queried with DuckDB or any compatible query engine.**
 
 This choice is grounded in the project's actual constraints:
 
@@ -388,7 +388,7 @@ But the **primary, canonical, permanent store** should be Iceberg on object stor
 
 ---
 
-## 5. Proposed architecture for Numairsia
+## 5. Proposed architecture for Numairsia Iceberg Data Lakehouse
 
 ![proposed-architecture](img/proposed-architecture.svg)
 
