@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500">
+  <defs>
+
+    <!-- Drop shadow for hero node -->
+    <filter id="hero-shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="7"
+                    flood-color="#1C1916" flood-opacity="0.14"/>
+    </filter>
+
+    <!-- Arrow markers — absolute units so size is consistent across stroke widths -->
+    <marker id="arr-neutral" viewBox="0 0 10 7" markerWidth="10" markerHeight="7"
+            refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+      <polygon points="0,0 10,3.5 0,7" fill="#C4B8AC"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 7" markerWidth="10" markerHeight="7"
+            refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+      <polygon points="0,0 10,3.5 0,7" fill="#7EB5D8"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 7" markerWidth="10" markerHeight="7"
+            refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+      <polygon points="0,0 10,3.5 0,7" fill="#60B09C"/>
+    </marker>
+
+    <!-- Clip path to keep hero header strip inside rounded corners -->
+    <clipPath id="hero-clip">
+      <rect x="305" y="210" width="145" height="52" rx="12"/>
+    </clipPath>
+
+  </defs>
+
+  <!-- ░░░ BACKGROUND ░░░ -->
+  <rect width="1000" height="500" fill="#F7F5F2"/>
+
+
+  <!-- ════════════════════════════════════
+       EDGES  (drawn first — nodes sit on top)
+       ════════════════════════════════════ -->
+
+  <!-- measurement_types → junction at (377, 165) : vertical drop -->
+  <line x1="149" y1="104" x2="149" y2="165"
+        stroke="#C4B8AC" stroke-width="1.5"/>
+
+  <!-- measurement_types side of horizontal bar -->
+  <line x1="149" y1="165" x2="377" y2="165"
+        stroke="#C4B8AC" stroke-width="1.5"/>
+
+  <!-- stations → junction at (377, 165) : drop then sweep left -->
+  <path d="M620,104 L620,165 L377,165"
+        fill="none" stroke="#C4B8AC" stroke-width="1.5"/>
+
+  <!-- junction → streams top (single arrowhead) -->
+  <line x1="377" y1="165" x2="377" y2="205"
+        stroke="#C4B8AC" stroke-width="1.5"
+        marker-end="url(#arr-neutral)"/>
+
+  <!-- streams → stream_bindings -->
+  <line x1="450" y1="236" x2="534" y2="236"
+        stroke="#7EB5D8" stroke-width="1.5"
+        marker-end="url(#arr-blue)"/>
+
+  <!-- stream_bindings → devices -->
+  <line x1="695" y1="236" x2="779" y2="236"
+        stroke="#60B09C" stroke-width="1.5"
+        marker-end="url(#arr-green)"/>
+
+  <!-- streams → obs bus : vertical trunk -->
+  <line x1="377" y1="262" x2="377" y2="318"
+        stroke="#7EB5D8" stroke-width="1.5"/>
+
+  <!-- obs horizontal bus at y=318 -->
+  <line x1="139" y1="318" x2="592" y2="318"
+        stroke="#7EB5D8" stroke-width="1.5"/>
+
+  <!-- branch → obs_numeric_scalar -->
+  <line x1="139" y1="318" x2="139" y2="384"
+        stroke="#7EB5D8" stroke-width="1.5"
+        marker-end="url(#arr-blue)"/>
+
+  <!-- branch → obs_numeric_vector (aligned with trunk) -->
+  <line x1="377" y1="318" x2="377" y2="384"
+        stroke="#7EB5D8" stroke-width="1.5"
+        marker-end="url(#arr-blue)"/>
+
+  <!-- branch → obs_text  (dashed = optional) -->
+  <line x1="592" y1="318" x2="592" y2="384"
+        stroke="#7EB5D8" stroke-width="1.5" stroke-dasharray="5,3"
+        marker-end="url(#arr-blue)"/>
+
+  <!-- Junction dots -->
+  <circle cx="377" cy="165" r="3.5" fill="#C4B8AC"/>
+  <circle cx="377" cy="318" r="3.5" fill="#7EB5D8"/>
+
+
+  <!-- ════════════════════════════════════
+       NODES
+       ════════════════════════════════════ -->
+
+  <!-- ── measurement_types  (neutral / lookup) ── -->
+  <rect x="57" y="60" width="185" height="44" rx="9"
+        fill="#EDE7DF" stroke="#C4B8AC" stroke-width="1.5"/>
+  <text x="149" y="87" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="13" font-weight="700" fill="#1C1916">measurement_types</text>
+
+  <!-- ── stations  (neutral / lookup) ── -->
+  <rect x="555" y="60" width="130" height="44" rx="9"
+        fill="#EDE7DF" stroke="#C4B8AC" stroke-width="1.5"/>
+  <text x="620" y="87" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="13" font-weight="700" fill="#1C1916">stations</text>
+
+  <!-- ── streams  (HERO — central entity) ── -->
+  <!-- shadow rect first -->
+  <rect x="305" y="210" width="145" height="52" rx="12"
+        fill="#DCE9F4" stroke="#2468A8" stroke-width="2"
+        filter="url(#hero-shadow)"/>
+  <!-- dark accent header strip (clipped to rounded box) -->
+  <rect x="305" y="210" width="145" height="24" fill="#2468A8"
+        clip-path="url(#hero-clip)"/>
+  <!-- node name in header -->
+  <text x="377" y="227" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="12" font-weight="700" fill="white">streams</text>
+  <!-- sub-label in body -->
+  <text x="377" y="249" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="10" fill="#2468A8">central entity</text>
+
+  <!-- ── stream_bindings  (storage) ── -->
+  <rect x="540" y="214" width="155" height="44" rx="9"
+        fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5"/>
+  <text x="617" y="241" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="13" font-weight="700" fill="#1C1916">stream_bindings</text>
+
+  <!-- ── devices  (analytics / sensors) ── -->
+  <rect x="785" y="214" width="163" height="44" rx="9"
+        fill="#EAF5F2" stroke="#60B09C" stroke-width="1.5"/>
+  <text x="866" y="232" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="13" font-weight="700" fill="#1C1916">devices</text>
+  <text x="866" y="249" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="10" fill="#4A4540">(sensors)</text>
+
+  <!-- ── obs_numeric_scalar  (storage) ── -->
+  <rect x="47" y="390" width="185" height="44" rx="9"
+        fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5"/>
+  <text x="139" y="417" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="12" font-weight="700" fill="#1C1916">obs_numeric_scalar</text>
+
+  <!-- ── obs_numeric_vector  (storage) ── -->
+  <rect x="285" y="390" width="185" height="44" rx="9"
+        fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5"/>
+  <text x="377" y="417" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="12" font-weight="700" fill="#1C1916">obs_numeric_vector</text>
+
+  <!-- ── obs_text  (storage, optional — dashed border) ── -->
+  <rect x="527" y="390" width="130" height="44" rx="9"
+        fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="592" y="408" text-anchor="middle"
+        font-family="Outfit, Segoe UI, sans-serif"
+        font-size="12" font-weight="700" fill="#1C1916">obs_text</text>
+  <text x="592" y="425" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="10" fill="#8A8580">(optional)</text>
+
+
+  <!-- ════════════════════════════════════
+       EDGE LABEL PILLS
+       ════════════════════════════════════ -->
+
+  <!-- FK · measurement_types branch (midpoint y≈134) -->
+  <rect x="133" y="124" width="33" height="17" rx="8.5"
+        fill="#F7F5F2" stroke="#C4B8AC" stroke-width="1"/>
+  <text x="149" y="137" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="9.5" fill="#4A4540">FK</text>
+
+  <!-- FK · stations branch (midpoint y≈134) -->
+  <rect x="604" y="124" width="33" height="17" rx="8.5"
+        fill="#F7F5F2" stroke="#C4B8AC" stroke-width="1"/>
+  <text x="620" y="137" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="9.5" fill="#4A4540">FK</text>
+
+  <!-- 1:N · streams → stream_bindings (above midpoint x≈492) -->
+  <rect x="477" y="219" width="33" height="17" rx="8.5"
+        fill="#F7F5F2" stroke="#7EB5D8" stroke-width="1"/>
+  <text x="493" y="232" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="9.5" fill="#2468A8">1:N</text>
+
+  <!-- N:1 · stream_bindings → devices (above midpoint x≈737) -->
+  <rect x="719" y="219" width="36" height="17" rx="8.5"
+        fill="#F7F5F2" stroke="#60B09C" stroke-width="1"/>
+  <text x="737" y="232" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="9.5" fill="#1A7560">N:1</text>
+
+  <!-- 1:N · streams → obs trunk (beside trunk at x=377) -->
+  <rect x="384" y="280" width="33" height="17" rx="8.5"
+        fill="#F7F5F2" stroke="#7EB5D8" stroke-width="1"/>
+  <text x="400" y="293" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="9.5" fill="#2468A8">1:N</text>
+
+
+  <!-- ════════════════════════════════════
+       CAPTION
+       ════════════════════════════════════ -->
+  <text x="500" y="476" text-anchor="middle"
+        font-family="Fira Code, Consolas, monospace"
+        font-size="11" fill="#8A8580">
+    streams is the central entity - linking measurement types, stations, bindings, and observations
+  </text>
+
+</svg>

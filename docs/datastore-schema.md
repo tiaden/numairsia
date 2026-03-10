@@ -1,5 +1,7 @@
 # Numairsia Authoritative Schema
 
+Last update : March 2026
+
 **Governing principle:**
 > A stream is the stable logical time series. A device is the movable and replaceable hardware. Bindings connect them over time.
 
@@ -49,19 +51,7 @@ Any writer or query session that operates in a local timezone can produce incorr
 
 ## Logical Model
 
-```text
-measurement_types   stations
-      │                │
-      └──────┬─────────┘
-             │
-          streams ──────── stream_bindings ──── devices (sensors)
-             │
-    ┌────────┴─────────┐
-    │                  │
-obs_numeric_scalar   obs_numeric_vector   obs_text (optional)
-```
-
-`streams` is the central entity. Observations always belong to a stream, never directly to a device.
+![tables-schema](img/tables-schema.svg)
 
 ---
 
