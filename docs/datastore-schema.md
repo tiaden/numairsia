@@ -52,7 +52,7 @@ Any writer or query session that operates in a local timezone can produce incorr
 ```text
 measurement_types   stations
       │                │
-      └──────┬──────── ┘
+      └──────┬─────────┘
              │
           streams ──────── stream_bindings ──── devices (sensors)
              │
@@ -403,7 +403,7 @@ Iceberg does not enforce relational constraints. The following rules must be enf
 ## Ingestion Architecture
 
 ``` text
-Central Server (other team's - ingestion daemon runs here)
+Ingestion and Coordination Server (sensors team's - ingestion daemon runs here)
         │
         │  [input interface - OPEN QUESTION: see below]
         ▼
@@ -420,7 +420,7 @@ Central Server (other team's - ingestion daemon runs here)
         │
         │  S3 API (network)
         ▼
-Your Server
+Server (Compute Canada)
   - Polaris REST Catalog service (HTTP :8181)
       └── backed by PostgreSQL (catalog state only)
   - Ceph S3 (Parquet data + Iceberg metadata)
