@@ -23,3 +23,4 @@ markdown_extensions:
 nav:
   - Overwiew: index.md
   - Data Store Evaluation : datastore-evaluation.md
+  - Data Store Schema : datastore-schema.md
