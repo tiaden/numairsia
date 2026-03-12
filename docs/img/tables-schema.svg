@@ -149,21 +149,21 @@
         fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5"/>
   <text x="139" y="417" text-anchor="middle"
         font-family="Outfit, Segoe UI, sans-serif"
-        font-size="12" font-weight="700" fill="#1C1916">obs_numeric_scalar</text>
+        font-size="12" font-weight="700" fill="#1C1916">obs_numeric_scalar_*</text>
 
   <!-- ── obs_numeric_vector  (storage) ── -->
   <rect x="285" y="390" width="185" height="44" rx="9"
         fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5"/>
   <text x="377" y="417" text-anchor="middle"
         font-family="Outfit, Segoe UI, sans-serif"
-        font-size="12" font-weight="700" fill="#1C1916">obs_numeric_vector</text>
+        font-size="12" font-weight="700" fill="#1C1916">obs_numeric_vector_*</text>
 
   <!-- ── obs_text  (storage, optional — dashed border) ── -->
   <rect x="527" y="390" width="130" height="44" rx="9"
         fill="#DCE9F4" stroke="#7EB5D8" stroke-width="1.5" stroke-dasharray="5,3"/>
   <text x="592" y="408" text-anchor="middle"
         font-family="Outfit, Segoe UI, sans-serif"
-        font-size="12" font-weight="700" fill="#1C1916">obs_text</text>
+        font-size="12" font-weight="700" fill="#1C1916">obs_text_*</text>
   <text x="592" y="425" text-anchor="middle"
         font-family="Fira Code, Consolas, monospace"
         font-size="10" fill="#8A8580">(optional)</text>
