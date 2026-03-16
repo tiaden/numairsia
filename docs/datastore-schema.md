@@ -48,6 +48,8 @@ This avoids ambiguous wall-clock handling and keeps database queries, archive pa
 
 ## 3. Logical Model
 
+![tables-schema](img/tables-schema.svg)
+
 The schema has two layers:
 
 1. **Metadata tables**: small relational reference data
@@ -88,7 +90,7 @@ CREATE TABLE measurement_types (
 );
 ```
 
-Rules
+**Rules:**
 
 - scalar kinds (`numeric_scalar`, `text`) must have `dimension_count = 1`
 - `dimensions` may be `NULL` during setup, but vector observations must not be ingested until it is populated
@@ -150,7 +152,7 @@ CREATE TABLE streams (
 );
 ```
 
-Rules
+**Rules:**
 
 - `station_id` and `measurement_type_id` are immutable after creation
 - if either changes materially, retire the stream and create a new one
@@ -181,7 +183,7 @@ CREATE TABLE stream_bindings (
 );
 ```
 
-Rules
+**Rules:**
 
 - for a given `stream_id`, bindings must not overlap (enforced by exclusion constraint)
 - the active binding at time `T` is: `valid_from <= T AND (valid_to IS NULL OR valid_to > T)`
@@ -207,7 +209,7 @@ CREATE TABLE ingest_batches (
 );
 ```
 
-Rules
+**Rules:**
 
 - `ingest_batches` contains successfully committed batches only
 - if the batch transaction rolls back, no `ingest_batches` row is committed
@@ -232,7 +234,7 @@ CREATE TABLE ingest_attempts (
 );
 ```
 
-Rules
+**Rules:**
 
 - one row per ingestion attempt
 - `status = 'running'` while work is in progress
@@ -320,7 +322,7 @@ CREATE INDEX obs_numeric_vector_ingest_batch_idx
     ON obs_numeric_vector (ingest_batch_id);
 ```
 
-Rules
+**Rules:**
 
 - `cardinality(values)` must equal the stream measurement type's `dimension_count`
 - vector observations must not be accepted until `measurement_types.dimensions` is populated
