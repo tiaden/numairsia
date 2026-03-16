@@ -12,7 +12,7 @@ Last update : March 2026
 
 The Numairsia project collects environmental measurements like temperature, humidity, and other weather-related variables from a network of roughly 100 field stations. Each station hosts about 10 sensors, each sampling a different physical quantity at intervals ranging from once per second to once per minute.
 
-The goal is straightforward: design a data store that can reliably ingest, retain permanently, and make queryable the full history of this sensor data. The design should be simple to operate, built on open standards, and resistant to vendor lock-in. It must run on a private Compute Canada OpenStack cloud and remain easy to migrate if the infrastructure changes in the future.
+The goal is straightforward: design a data store that can reliably ingest, retain permanently, and make queryable this sensor data. The design should be simple to operate, built on open standards, and resistant to vendor lock-in. It must run on a private Compute Canada OpenStack cloud and remain easy to migrate if the infrastructure changes in the future.
 
 ### 1.2 High-Level Specifications
 
@@ -182,8 +182,7 @@ This separation has several structural advantages:
 - **Retention is trivial.** Object storage is designed for durable, long-term data. Keeping data forever costs only storage space ... there is no index maintenance, no compaction, no background process chewing through CPU.
 - **Migration is copying files.** Moving to a different cloud or infrastructure means copying files with `rsync`, `rclone`, or `mc` (MinIO client). There is no export step.
 
-On a private OpenStack cloud, object storage is available through OpenStack Swift (with S3 compatibility middleware) or via a standalone MinIO or Ceph deployment. MinIO and Ceph exposes S3-compatible APIs directly; Swift can be made S3-compatible through middleware.
-
+On a private OpenStack cloud, object storage is available through OpenStack Swift (with S3 compatibility middleware) or via a standalone MinIO or Ceph deployment.
 The question is: **what file format should the data be stored in?**
 
 ---
@@ -384,7 +383,7 @@ This choice is grounded in the project's actual constraints:
 
 If there is a future need for real-time dashboards on the most recent data, a thin hot layer (e.g., a small TimescaleDB, QuestDB instance or a StarRocks materialized view holding the last 7 to 30 days) can be added alongside the Iceberg-based cold store. This hybrid approach gives you the best of both worlds without compromising the long-term architecture.
 
-But the **primary, canonical, permanent store** should be Iceberg on object storage. It is the lowest-regret choice available today.
+But the **primary, canonical, permanent store** should be Iceberg on object storage. It is the lowest-regret choice available today at the time of writing.
 
 ---
 
@@ -426,7 +425,7 @@ This is not a compromise in the pejorative sense. It is a deliberate separation 
 | Columnar compression of operational data | TimescaleDB (native hypertable compression) |
 | Permanent archival in open format | Parquet files on S3 (Ceph) |
 | Analytical queries over historical data | DuckDB, StarRocks, or any Parquet-capable engine |
-| Curated dataset preparation | Data scientists query the archive, export results to S3 |
+| Curated dataset preparation | Data scientists query TimescaleDB or the archive, export results to S3 for researchers |
 
 ### 6.2 Architecture overview
 
@@ -459,7 +458,7 @@ S3 (Ceph) ─── Parquet archive ──────────────�
 Two audiences, two interfaces, no overlap:
 
 - **Writers** (the ingestion process and operators performing corrections) interact with TimescaleDB through SQL. They benefit from constraints, transactions, and familiar tooling.
-- **Readers** (researchers and analysts) interact with Parquet files on S3 through analytical engines. They benefit from columnar access, engine choice, and full isolation from the operational database.
+- **Readers** (researchers and analysts) interact with Parquet files on S3 through analytical engines. They benefit from columnar access, engine choice, fast queries and full isolation from the operational database.
 
 Researchers never connect to TimescaleDB. They do not need credentials, they cannot issue slow queries that affect ingestion performance, and they cannot accidentally modify data. The Parquet archive is their interface.
 
@@ -497,7 +496,7 @@ Both projects are worth keeping tabs on. The appearance of pg_lake and pg_moonca
 
 The Parquet archive on S3 is the raw analytical layer. It mirrors what is in TimescaleDB, exported on a schedule. For many research questions, querying it directly with DuckDB is sufficient.
 
-For more specialized needs, data scientists can prepare curated extractions: filtered, aggregated, or joined datasets tailored to a specific research question, exported as Parquet files to a dedicated area on S3. Researchers consume these curated datasets without needing to write complex queries themselves.
+For more specialized needs, data scientists can prepare curated extractions: filtered, aggregated, or joined datasets tailored to a specific research question, exported as Parquet files to a dedicated area on S3. Researchers consume these curated datasets without needing to write complex queries themselves. The curated zone can also host a denormalized view of the archive zone for each sensor data to accelerate researchers queries.
 
 ```text
 s3://numairsia/
@@ -512,16 +511,16 @@ s3://numairsia/
       └── ...
 ```
 
-Both layers are Parquet on S3. Both are queryable by any engine. The distinction is organizational, not technical.
+Both layers are Parquet on S3. Both are queryable by any engine. The distinction is organizational, not technical and adheres to the medallion architecture data design pattern.
 
 ### 6.6 What this simplifies
 
-The Iceberg-first architecture described in Section 5 requires the project to build and operate several components that exist only because Iceberg is not a database. This hybrid removes that burden by using a database where a database is the right tool.
+The Iceberg-first architecture described in Section 5 requires the project to build and operate several components that exist only because Iceberg is not a database in the regular sense. This hybrid removes that burden by using a database where a database is the right tool.
 
 | Concern | Iceberg-first approach | Hybrid approach |
 | --- | --- | --- |
 | Schema enforcement | Application code in the ingestion process | PostgreSQL DDL (`NOT NULL`, `CHECK`, foreign keys) |
-| Replay deduplication | Application-level `(source_system, ingress_record_id)` check | Unique constraint or upsert logic in PostgreSQL |
+| Replay deduplication | Application-level check | Unique constraint or upsert logic in PostgreSQL |
 | Data corrections | Iceberg branch, validate, promote, tag | `UPDATE` statement in TimescaleDB |
 | Relational integrity audits | 4+ weekly custom audit jobs | Enforced at write time by the database |
 | Snapshot and metadata management | Weekly expiry, monthly pinning, orphan cleanup | Not applicable; PostgreSQL manages its own storage |

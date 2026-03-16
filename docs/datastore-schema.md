@@ -34,7 +34,7 @@ Design summary
 
 All temporal columns use `timestamptz` and are stored in UTC.
 
-UTC-only rule
+UTC-only rule:
 
 - ingestion process runs with `TZ=UTC`
 - governance CLI runs with `TZ=UTC`
@@ -485,14 +485,14 @@ WHERE (obs_numeric_scalar.value, obs_numeric_scalar.quality_code)
       IS DISTINCT FROM (EXCLUDED.value, EXCLUDED.quality_code);
 ```
 
-Semantics
+*Semantics:*
 
 - exact replay: same key, same value, same quality -> no update
 - correction: same key, different value and/or quality -> update occurs
 - metadata-only differences do **not** trigger an update
 - when an update does occur, the incoming lineage fields (`source_system`, `ingress_record_id`, `ingest_batch_id`, `correction_event_id`) replace the stored values for the current row image
 
-Important consequence
+*Important consequence:*
 
 - `ingested_at` records first successful insert time
 - `ingest_batch_id` identifies the most recent committed ingestion batch that wrote the current row image
@@ -537,7 +537,7 @@ If governed correction campaigns become important, deploy `correction_events` an
 7. Commit the main transaction
 8. If the main transaction fails, roll it back and update `ingest_attempts` to `status = 'failed'` in a separate transaction
 
-Operational note
+*Operational note:*
 
  If the process crashes after creating the attempt row but before marking it failed, a stale `running` attempt can remain and must be handled by monitoring / operational cleanup
 
@@ -561,7 +561,7 @@ The ingestion process must:
 
 - failed main transactions leave no partial observation rows and no committed `ingest_batches` row
 - stale `running` attempts after a process crash must be surfaced by monitoring and marked failed operationally
-- concurrent writers are tolerated by PostgreSQL row-level locking and the uniqueness rules, but single-writer operation remains operationally simpler
+- concurrent writers are tolerated by PostgreSQL row-level locking and the uniqueness rules, but single-writer operation remains operationally simpler and preferred
 
 ---
 
@@ -587,7 +587,7 @@ SELECT add_compression_policy('obs_numeric_scalar', INTERVAL '10 days');
 
 Apply the same pattern to optional observation tables when deployed.
 
-Operational rule
+*Operational rule:*
 
 - archive export is delayed by 7 days
 - compression begins at 10 days
@@ -610,7 +610,7 @@ Operational rule
 
 Schema evolution follows standard PostgreSQL DDL.
 
-Rules
+*Rules:*
 
 - add columns with `ALTER TABLE ... ADD COLUMN`
 - rename columns only for wording clarity, not semantic change
@@ -619,7 +619,7 @@ Rules
 - change measurement semantics by creating a new `measurement_type`
 - change stream identity by retiring the stream and creating a new one
 
-Archive note
+*Archive note:*
 
 - after a column is added or removed, Parquet files in the archive will have heterogeneous schemas
 - DuckDB requires `union_by_name = true` to unify columns by name and fill missing columns with NULL
@@ -746,8 +746,6 @@ SELECT incremental.create_time_interval_pipeline(
 );
 ```
 
-**Why `SELECT *`:** no observation table columns are excluded from the archive. Using `SELECT *` ensures that columns added via schema evolution are automatically included in future exports without modifying the function.
-
 **Why `ORDER BY stream_id, observed_at`:** produces well-ordered row groups so analytical engines can skip irrelevant data using min/max statistics.
 
 Apply the same wrapper-function pattern to `obs_numeric_vector` and `obs_text` when deployed.
@@ -831,7 +829,7 @@ Use it when:
 
 **Step 1: Stop ingestion and export jobs.**
 
-**Step 2: Restore schema and metadata.** Use `pg_dump` / `pg_restore` for the database schema, then restore metadata tables: `measurement_types`, `stations`, `devices`, `streams`, `stream_bindings`. Restore audit parents: `ingest_batches`, then `correction_events` if deployed.
+**Step 2: Restore schema and metadata.** Use `pg_dump` / `pg_restore` for the database schema, then restore metadata tables: `measurement_types`, `stations`, `devices`, `streams`, `stream_bindings`. Restore audit parents: `ingest_batches`, then `correction_events` if deployed. Metadata data can also be restored from parquet files equivalent.
 
 **Step 3: Import observation data from Parquet.** Use pg_incremental's file list pipeline to import files one at a time with automatic progress tracking:
 
@@ -849,57 +847,11 @@ $fn$;
 SELECT incremental.create_file_list_pipeline(
     'obs-scalar-import',
     file_pattern := 's3://numairsia/archive/obs_numeric_scalar/**/*.parquet',
-    list_function := 'parquet.list',
     command       := 'SELECT import_obs_numeric_scalar($1)'
 );
 ```
 
-> **Note:** pg_incremental's file list pipelines are marked as preview. Validate the `parquet.list` / `list_function` integration during OQ-2 testing before relying on it for disaster recovery.
-
-**Fallback procedure** if the file list pipeline integration is not available:
-
-```sql
-CREATE TABLE IF NOT EXISTS import_progress (
-    uri text PRIMARY KEY,
-    imported_at timestamptz NOT NULL DEFAULT clock_timestamp()
-);
-
-CREATE OR REPLACE PROCEDURE restore_obs_numeric_scalar()
-LANGUAGE plpgsql AS $$
-DECLARE
-    file record;
-    imported_count int := 0;
-BEGIN
-    FOR file IN
-        SELECT uri FROM parquet.list('s3://numairsia/archive/obs_numeric_scalar/**/*.parquet')
-        WHERE uri NOT IN (SELECT uri FROM import_progress)
-        ORDER BY uri
-    LOOP
-        EXECUTE format(
-            $$COPY obs_numeric_scalar FROM %L WITH (format 'parquet', match_by 'name')$$,
-            file.uri
-        );
-        INSERT INTO import_progress (uri) VALUES (file.uri);
-        COMMIT;
-
-        imported_count := imported_count + 1;
-        RAISE NOTICE 'Imported file %: %', imported_count, file.uri;
-    END LOOP;
-
-    RAISE NOTICE 'Restore complete. % files imported.', imported_count;
-END;
-$$;
-
-CALL restore_obs_numeric_scalar();
-```
-
-**`match_by 'name'`:** matches Parquet columns to PostgreSQL columns by name rather than position. Table columns not present in the Parquet file receive their default value or NULL. This is relevant after schema evolution adds new columns to the table that older Parquet files do not contain. Validate this behavior during OQ-2 testing.
-
-**Step 4: Re-enable compression policies.** TimescaleDB compression will automatically compress chunks older than 10 days.
-
-**Step 5: Re-enable export jobs.** Reset or recreate the export pipeline with a `start_time` after the last successfully exported day.
-
-**Step 6: Validate.** Compare row counts per day in TimescaleDB against Parquet file row counts. Run sample queries to verify data integrity.
+*Operational Note:* Compare row counts per day in TimescaleDB against Parquet file row counts. Run sample queries to verify data integrity.
 
 ---
 
@@ -965,6 +917,7 @@ At minimum, monitor:
 4. decide whether single-writer operation is enforced operationally or merely tolerated
 5. define the operational procedure for cleaning up stale `running` attempts after crashes
 6. decide whether to add explicit geographic location columns (latitude, longitude, elevation) to the `stations` table, or whether `properties jsonb` is sufficient for location metadata
+7. decide whether to drop the entire ingestion batch if one row fails or ingest successfull rows and record failures into the dropped-row counts column
 
 ---
 
