@@ -21,7 +21,7 @@ Before evaluating solutions, it helps to lay out the constraints that matter mos
 | Specification | Detail | Priority |
 | --- | --- | --- |
 | **Data volume** | ~100 stations × ~10 sensors × 1s to 1min sampling | Medium |
-| **Ingestion pattern** | Batch ingestion, append-only | High |
+| **Ingestion pattern** | Batch ingestion, append-heavy and occasional re-exports or corrections | High |
 | **Ingestion rate** | ~1 to 10 events/sec/station (~100 to 1,000 events/sec total) | Low-Medium |
 | **Retention** | Permanent. No data is ever discarded | **Critical** |
 | **Expected scale** | Terabyte range | Medium |
@@ -362,9 +362,9 @@ Each solution is scored against the project's high-level specifications on a 1 t
 
 ---
 
-## 4. Recommendation
+## 4. Initial Recommendation
 
-**For the Numairsia project, the recommended primary data store is an Iceberg Data Lakehouse (Iceberg tables on S3 object storage) queried with DuckDB or any compatible query engine.**
+For the Numairsia project, the recommended primary data store is an Iceberg Data Lakehouse (Iceberg tables on S3 object storage) queried with DuckDB or any compatible query engine.
 
 This choice is grounded in the project's actual constraints:
 
@@ -388,7 +388,7 @@ But the **primary, canonical, permanent store** should be Iceberg on object stor
 
 ---
 
-## 5. Proposed architecture for Numairsia Iceberg Data Lakehouse
+## 5. Initial Proposed architecture for Numairsia Iceberg Data Lakehouse
 
 ![proposed-architecture](img/proposed-architecture.svg)
 
@@ -398,3 +398,168 @@ On the private Compute Canada OpenStack cloud:
 - **Iceberg catalog** can be a lightweight REST catalog or a SQL/JDBC catalog backed by PostgreSQL.
 - **Ingestion** uses PyIceberg (Python) or a simple script that writes Parquet files and commits them to the Iceberg table. This fits naturally into batch workflows managed by Airflow, cron, or any scheduler.
 - **Querying** uses DuckDB for interactive analysis (with Iceberg extension), StarRocks and and Jupyter notebooks for research.
+
+---
+
+## 6. Simplified Alternative (Preferred): TimescaleDB + Parquet Archive (Pref)
+
+### 6.1 The case for a hybrid
+
+Section 2 of this document reached two conclusions that pull in opposite directions:
+
+- Hot databases (TimescaleDB, QuestDB, InfluxDB 3) provide relational enforcement, familiar SQL, and native data correction, but they trap data inside the engine and introduce portability risk.
+- Cold storage (Parquet on object storage) provides open formats, permanent retention, and engine-agnostic access, but it lacks schema enforcement, transactional guarantees, and a natural mechanism for corrections.
+
+The Iceberg Data Lakehouse recommended in Section 4 bridges this gap by adding a metadata layer on top of Parquet. That is a sound architecture, but it comes with operational costs: a catalog server (Polaris backed by PostgreSQL), application-level enforcement of every relational constraint that Iceberg does not provide natively, a maintenance schedule with compaction, snapshot expiry, orphan cleanup, and multiple audit jobs, and a correction workflow built around Iceberg branch-and-merge semantics.
+
+For a small research team on shared infrastructure, there is a simpler architecture that delivers most of the same benefits. Instead of building relational behavior on top of a file format, start with a relational database and archive to the file format.
+
+**The idea: use TimescaleDB as the operational core. Periodically export closed time partitions to Parquet files on S3. Researchers never touch the database. They query the Parquet archive with DuckDB, StarRocks, or any analytical engine that reads Parquet.**
+
+This is not a compromise in the pejorative sense. It is a deliberate separation of concerns that plays to the strengths of each layer:
+
+| Responsibility | Handled by |
+| --- | --- |
+| Ingestion, validation, deduplication | TimescaleDB (PostgreSQL constraints, triggers, SQL) |
+| Schema enforcement, foreign keys | TimescaleDB (native relational enforcement) |
+| Data correction (UPDATEs, backfills) | TimescaleDB (standard SQL DML) |
+| Columnar compression of operational data | TimescaleDB (native hypertable compression) |
+| Permanent archival in open format | Parquet files on S3 (Ceph) |
+| Analytical queries over historical data | DuckDB, StarRocks, or any Parquet-capable engine |
+| Curated dataset preparation | Data scientists query the archive, export results to S3 |
+
+### 6.2 Architecture overview
+
+```text
+Field stations
+      │
+      │  (files transferred periodically)
+      ▼
+Ingestion process (Python)
+      │
+      │  SQL INSERT (validated, deduplicated)
+      ▼
+TimescaleDB (PostgreSQL)                               Researchers
+  - hypertable with time-based chunks                      ▲
+  - relational constraints enforced natively               │
+  - corrections via standard SQL UPDATE                    │  DuckDB / StarRocks / Polars
+  - columnar compression on aged chunks                    │
+      │                                                    │
+      │  pg_parquet: COPY (SELECT ...) TO 's3://...'       │
+      │  scheduled via pg_incremental + pg_cron            │
+      ▼                                                    │
+S3 (Ceph) ─── Parquet archive ────────────────────────────►│
+  s3://numairsia/archive/
+    └── observations/
+        ├── 2025/01/01/data.parquet
+        ├── 2025/01/02/data.parquet
+        └── ...
+```
+
+Two audiences, two interfaces, no overlap:
+
+- **Writers** (the ingestion process and operators performing corrections) interact with TimescaleDB through SQL. They benefit from constraints, transactions, and familiar tooling.
+- **Readers** (researchers and analysts) interact with Parquet files on S3 through analytical engines. They benefit from columnar access, engine choice, and full isolation from the operational database.
+
+Researchers never connect to TimescaleDB. They do not need credentials, they cannot issue slow queries that affect ingestion performance, and they cannot accidentally modify data. The Parquet archive is their interface.
+
+### 6.3 The export bridge: pg_parquet
+
+The bridge between the two worlds is `pg_parquet`, an open-source PostgreSQL extension by CrunchyData. It extends the standard `COPY` command to write query results directly to Parquet files on S3:
+
+```sql
+COPY (
+  SELECT * FROM sensor_readings
+  WHERE time >= '2025-01-01' AND time < '2025-01-02'
+  ORDER BY time
+)
+TO 's3://numairsia/archive/observations/2025/01/01/data.parquet'
+WITH (format 'parquet', compression 'zstd');
+```
+
+Combined with `pg_incremental` (also by CrunchyData), this becomes an automated pipeline. `pg_incremental` tracks which time intervals have been exported and ensures that each day is exported exactly once, with gap-free catch-up after downtime. A configurable delay ensures that data is not exported until the time window has fully closed and late-arriving data has been accounted for.
+
+The export is a read-only operation on TimescaleDB. It does not lock tables, does not interfere with ingestion, and produces immutable Parquet files that any tool can read.
+
+### 6.4 pg_parquet vs. pg_lake and pg_mooncake
+
+Two more ambitious PostgreSQL extensions deserve mention, because they aim to do more than export Parquet files.
+
+**pg_lake** is a set of extensions that embed DuckDB's query engine inside PostgreSQL, support foreign tables over Parquet files on S3, and can create and manage Iceberg tables directly. It started at CrunchyData in early 2024 and is now maintained under Snowflake-Labs on GitHub. pg_lake is attractive because it could eventually serve both sides of this architecture from within PostgreSQL: write to hypertables, export to Iceberg, and query the archive via foreign tables, all in SQL. However, as of March 2026, pg_lake is not yet production-hardened. The project is young, its API surface is still evolving, and the operational experience base is thin.
+
+**pg_mooncake** is a PostgreSQL extension by Mooncake Labs that creates an Iceberg columnstore mirror of regular PostgreSQL tables using logical replication. It is MIT-licensed and designed for real-time OLAP on OLTP data. pg_mooncake should not be adopted right now: it is promising, but v0.2 remains in open preview/experimental and currently lacks remote object storage support (S3/R2 integration is on the roadmap but not yet shipped), which makes it a poor fit for our target Ceph/S3-based architecture.
+
+Both projects are worth keeping tabs on. The appearance of pg_lake and pg_mooncake reinforces that we are heading in the right direction strategically: the ecosystem is converging on open formats, object storage for analytical workflows.
+
+**Recommendation:** Start with `pg_parquet` for the export pipeline. It is narrowly scoped (COPY to/from Parquet on S3), well-tested, and sufficient for this architecture. If pg_lake or pg_mooncake mature and the project needs Iceberg table management or in-database querying of the archive, either can be adopted later without changing the fundamental design. The Parquet files on S3 are the stable interface; the tool that writes them is replaceable.
+
+### 6.5 Curated datasets for researchers
+
+The Parquet archive on S3 is the raw analytical layer. It mirrors what is in TimescaleDB, exported on a schedule. For many research questions, querying it directly with DuckDB is sufficient.
+
+For more specialized needs, data scientists can prepare curated extractions: filtered, aggregated, or joined datasets tailored to a specific research question, exported as Parquet files to a dedicated area on S3. Researchers consume these curated datasets without needing to write complex queries themselves.
+
+```text
+s3://numairsia/
+  ├── archive/               ← automated export from TimescaleDB
+  │   └── observations/
+  │       └── ...
+  └── curated/               ← prepared by data scientists for researchers or BI tools
+      ├── campaign-2025-summer-heat/
+      │   └── hourly_averages.parquet
+      ├── station-comparison-q1/
+      │   └── aligned_readings.parquet
+      └── ...
+```
+
+Both layers are Parquet on S3. Both are queryable by any engine. The distinction is organizational, not technical.
+
+### 6.6 What this simplifies
+
+The Iceberg-first architecture described in Section 5 requires the project to build and operate several components that exist only because Iceberg is not a database. This hybrid removes that burden by using a database where a database is the right tool.
+
+| Concern | Iceberg-first approach | Hybrid approach |
+| --- | --- | --- |
+| Schema enforcement | Application code in the ingestion process | PostgreSQL DDL (`NOT NULL`, `CHECK`, foreign keys) |
+| Replay deduplication | Application-level `(source_system, ingress_record_id)` check | Unique constraint or upsert logic in PostgreSQL |
+| Data corrections | Iceberg branch, validate, promote, tag | `UPDATE` statement in TimescaleDB |
+| Relational integrity audits | 4+ weekly custom audit jobs | Enforced at write time by the database |
+| Snapshot and metadata management | Weekly expiry, monthly pinning, orphan cleanup | Not applicable; PostgreSQL manages its own storage |
+| Catalog server | Polaris (HTTP service + PostgreSQL backend) | Not applicable |
+| Compaction | Nightly PyIceberg or PySpark job | TimescaleDB compression policy (built-in) |
+| Write path tooling | PyIceberg (Python, Arrow, Parquet, Iceberg commits) | Standard PostgreSQL client (`INSERT`, `COPY`) |
+
+This is not a criticism of Iceberg. Iceberg is the right answer when you need multi-engine interoperability on a shared table, schema evolution across petabytes, or time travel for audit. But with a small team, the operational surface area of a full Iceberg deployment is a lot.
+
+### 6.7 What you trade off
+
+This design is simpler, but it is not free. The tradeoffs should be stated clearly.
+
+**The archive lags behind the database.** The Parquet files on S3 reflect the state of TimescaleDB as of the last export. With a 7-day export delay (to capture late data and corrections), the archive is always at least a week behind. Researchers who need the latest data must wait, or the team must provide a separate near-real-time feed. For most environmental research workflows, a 7-day lag is acceptable.
+
+**No time travel on the archive.** Bare Parquet files do not support querying the dataset as it existed at a past point in time. Once a day's file is overwritten by a re-export (e.g. after a correction), the previous version is gone unless the team implements S3 object versioning or a naming convention for superseded files. Iceberg provides this natively.
+
+**No atomic schema evolution on the archive.** If a column is added to TimescaleDB, new Parquet files will include it. Old files will not. Query engines handle this gracefully (the missing column returns NULL), but there is no metadata layer coordinating the change. Iceberg handles this transparently via field IDs.
+
+**Corrections after the export window require re-export.** If a row is corrected after its day has already been exported, the Parquet file on S3 is stale. The correction exists in TimescaleDB but not in the archive. A re-export mechanism (manual or automated) is needed to propagate late corrections. This is solvable, but it is an operational concern that does not exist in a system where the archive is the primary store.
+
+**Data lives in two places.** TimescaleDB holds the operational truth. S3 holds the analytical archive. These must not diverge silently. The export pipeline must be monitored, and the team must decide which copy is authoritative in case of disagreement. In this design, TimescaleDB is authoritative; S3 is a derived projection.
+
+### 6.8 When to consider the Iceberg approach instead
+
+The hybrid architecture described here is appropriate when:
+
+- The team is small and prefers to operate a PostgreSQL database over a catalog service and custom maintenance scripts.
+- Corrections are infrequent, operator-driven, and can be expressed as SQL UPDATE statements.
+- The primary analytical audience is content to query Parquet files with a lag.
+- The ingestion rate fits comfortably within a single PostgreSQL instance.
+
+The Iceberg-first approach from Section 4 becomes the better choice when:
+
+- Multiple independent teams or engines need to write to the same table concurrently.
+- Time travel and snapshot isolation are required for reproducibility or regulatory audit.
+- The dataset grows beyond what a single PostgreSQL instance can manage for retention.
+- Schema evolution must be coordinated across hundreds of existing files without re-export.
+- The team is prepared to operate the catalog, compaction, and snapshot management infrastructure.
+
+These conditions may emerge as the project grows. The hybrid design does not foreclose on Iceberg. The Parquet files on S3 are already in the right format. Adding an Iceberg metadata layer on top of them, or switching the export target from bare Parquet to Iceberg tables via pg_lake or pg_mooncake, is an incremental step, not a migration.
