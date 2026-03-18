@@ -1,5 +1,6 @@
 # Numairsia — Authoritative Schema
 
+Author : Edem Tiassou
 Last update: March 2026
 
 **Governing principle:**
@@ -783,6 +784,7 @@ SELECT export_obs_numeric_scalar(
 );
 ```
 
+It might be helpful to record the date of the manual correction in a table in order to identify more effectively those rows that need to be re-exported in the future.
 If post-export corrections become frequent, an automated re-export job can be added using pg_cron and the `updated_at` BRIN index to scan for affected days.
 
 ---
@@ -929,6 +931,8 @@ Each pattern is shown twice: first against TimescaleDB, then against the Parquet
 
 ```sql
 -- Run once per DuckDB session
+
+SET TimeZone = 'UTC'
 
 CREATE OR REPLACE VIEW obs AS
 SELECT * FROM read_parquet(
