@@ -3,6 +3,7 @@
 Storage Architecture for Environmental Sensor Data
 
 Author : Edem Tiassou
+
 Last update : March 2026
 
 ---

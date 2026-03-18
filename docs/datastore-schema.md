@@ -1,6 +1,7 @@
 # Numairsia — Authoritative Schema
 
 Author : Edem Tiassou
+
 Last update: March 2026
 
 **Governing principle:**
